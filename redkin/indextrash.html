@@ -1,0 +1,97 @@
+<?php
+session_start();
+	if( !isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+		$user=$_SESSION['user'];
+		db_connect();
+		$qw="SELECT * FROM users WHERE login='$user'";
+		$res=mysqli_query($conn,$qw);
+		while($rowr = mysqli_fetch_assoc($res))
+		{
+			$status=$rowr['status'];
+			$id_user=$rowr['id_user'];
+		}
+			// Массив с товарами
+			$query = "SELECT * FROM dm_deal";		
+			$result = mysqli_query($conn, $query);
+			$fetchArray = array();	
+			while($row = mysqli_fetch_assoc($result))
+			array_push($fetchArray, $row);
+	db_close();
+?>
+<head>
+	<script type="text/javascript" src="/trash.js"></script>
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+	<main>
+		<?php
+			$count_article = 0;
+			if(!empty($fetchArray)){
+			foreach ($result as $key => $val) {
+				$id = $val["id_deal"];
+				$id_cus = $val["id_cus"];
+				$name = $val["product"];
+				$price = $val["number"];
+				$index=split(',',$name);
+				$numb=split(',',$price);
+				$decsription = $val["typetravel"];
+				if($decsription=="fast")
+				{
+					$decsription="Доставка";
+				}
+				else
+				{
+					$decsription="Самовывоз";
+				}
+				$nums = $val["totalprice"];
+				$id_usr = $val["id_user"];
+				
+				$count_article++;
+					echo'	<div class="blocks">
+						<a href="vieworder.html?dm_deal='.$id.'">
+						<article id="$id">';
+						db_connect();
+						$usr="SELECT * FROM users WHERE id_user='$id_usr'";
+						$qusr=mysqli_query($conn, $usr);
+						while($rowusr = mysqli_fetch_assoc($qusr))
+						{
+							$id_usr=$rowusr['login'];
+						}
+						$cuss="SELECT * FROM customer WHERE id_cus='$id_cus'";
+						$qcus=mysqli_query($conn, $cuss);
+						while($rowcus = mysqli_fetch_assoc($qcus))
+						{
+							$id_cus=$rowcus['namecus'];
+						}
+						db_close();
+					echo'	<div class="vmm">Покупатель: '.$id_usr.'</div>';
+					echo'	<div class="vmm">Заказчик: '.$id_cus.'</div>';
+echo'
+							<div class="vmm">Доставка: '.$decsription.'</div>
+							<div class="wrap">					
+							</div>
+							<div class="vmm">Стоимость: '.$nums.' р.</div>
+						</article>
+						</div>
+					</a>';
+				}				
+				echo $article;
+				}
+			else
+			{
+			echo "Товар не найден!";
+			}
+			
+		?>			
+	</main>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+</body>

@@ -1,0 +1,85 @@
+<?php
+	session_start();
+	if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	$id = $_GET["product"];	
+	$query1 = "SELECT * FROM product WHERE id_product='$id'";
+	$search = mysqli_query($conn, $query1);
+	while($row = mysqli_fetch_assoc($search))
+	{
+		$img= $row['img'];
+		$namepr= $row['namepr'];
+		$category= $row['category'];
+		if($category=="gardens")
+		{
+		$category="Сады";
+		}
+		else if($category=="electronics")
+		{
+		$category="Электроника";
+		}
+		else if($category=="plumbing")
+		{
+		$category="Водопровод";
+		}
+		else if($category=="tools")
+		{
+		$category="Инструменты";
+		}
+		$price= $row['price'];
+		$description=$row['description'];
+		$properties=$row['properties'];
+		$nums= $row['status'];
+		if($nums==0)
+				{
+					$otvet="";
+				}
+				else
+				{
+					$otvet="<button type='button' onclick='productInTrash($id)'>Заказать</button>";
+				}
+	}
+	db_close();
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="/trash.js"></script>
+</head>
+
+<body>
+
+	<?php 
+		require_once "blocks/header.php"; 
+	?>
+	<p><img src=<?=$img?> width=200px height=200px></p>
+	<p class="vmm">Название: <?=$namepr?></p>
+	<p class="vmm">Категория: <?=$category?></p>
+	<p class="vmm">Цена: <?=$price?>р.</p>
+	<p class="vmm">Описание: <?=$description?></p>
+	<p class="vmm">Свойство: <?=$properties?></p>
+	<p class="vmm">Количество на складе: <?=$nums?> шт.</p>
+	<?php 
+	if($status=="root" || $status=="admin") 
+	{
+		echo $otvet;
+	}
+		require_once "blocks/footer.php"; 
+	?>
+
+</body>
+
+</html>

@@ -1,0 +1,143 @@
+<?php
+	session_start();
+	if( !isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	if(!empty($_GET["category"])) {
+		$category = $_GET["category"];
+		$user=$_SESSION['user'];
+		db_connect();
+		// Массив с товарами
+		$query = "SELECT * FROM product WHERE category='$category'";		
+		$result = mysqli_query($conn, $query);
+		$fetchArray = array();	
+		while($row = mysqli_fetch_assoc($result))
+		array_push($fetchArray, $row);
+		
+		$qw="SELECT status FROM users WHERE login='$user'";
+		$res=mysqli_query($conn,$qw);
+		while($rowr = mysqli_fetch_assoc($res))
+		{
+			$status=$rowr['status'];
+		}
+	} else
+	header("Location: /");
+	db_close();
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="/trash.js"></script>
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+				echo $resul;
+	?>
+	
+	<main>
+		<?php
+			$count_article = 0;
+			if(!empty($fetchArray)){
+			foreach ($result as $key => $val) {
+				$id = $val["id_product"];
+				$name = $val["namepr"];
+				$price = $val["price"];
+				$decsription = $val["description"];
+				$nums = $val["status"];
+				$img = $val["img"] == "" ? "img/block.jpg" : $val["img"];
+				
+				$count_article++;
+				if($nums==0)
+				{
+					$otvet="";
+				}
+				else
+				{
+					$otvet="<button class='vm' type='button' onclick='productInTrash($id)'>Заказать</button>";
+				}
+				
+				switch($status) {
+					case "admin":
+						$article = <<<_OUT
+						<div class="blocks">
+						<a href="view.html?product=$id">
+						<article id="$id">
+							<div class="vmm">$name</div>
+							<div class="wrap">
+								<figure>
+									<img src="$img" width=200px height=200px>
+								</figure>							
+							</div>
+							<foot class="price">$price</foot>
+							</a>
+							<center><a class="vm" type="button" href="edit.html?product=$id">редактировать</a></center>
+							<center>$otvet</center>
+						</article>
+						</div>
+_OUT;
+						break;
+						
+					case "root":
+						$article = <<<_OUT
+						<div class="blocks">
+						<a href="view.html?product=$id">
+						<article id="$id">
+							<div class="vmm">$name</div>
+							<div class="wrap">
+								<figure>
+									<img src="$img" width=200px height=200px>
+								</figure>
+							
+							</div>
+							<foot class="price">$price</foot>
+							</a>
+							<center><a class="vm" type="button" href="edit.html?product=$id"><button>редактировать</button></a></center>
+							<center><a class="vm" type="button" href="delt.html?product=$id"><button>удалить</button></a></center>
+							<center>$otvet</center>
+						</article>
+						</div>
+_OUT;
+						break;
+					
+					default:
+						$article = <<<_OUT
+						<div class="blocks">
+						<a href="view.html?product=$id">
+						<article id="$id">
+							<div class="vmm">$name</div>
+							<div class="wrap">
+								<figure>
+									<img src="$img" width=200px height=200px>
+								</figure>							
+							</div>
+							<foot class="price">$price</foot>
+							</a>
+						</article>
+						</div>
+_OUT;
+					break;
+				}				
+				echo $article;
+				}
+			}
+			else
+			{
+			echo "Товар не найден!";
+			}
+			
+		?>
+		
+		
+	</main>
+		<?php 
+		require_once "blocks/footer.php"; 
+	?>
+
+</body>
+
+</html>

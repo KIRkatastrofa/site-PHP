@@ -1,0 +1,39 @@
+<?php
+	session_start();
+	if( !isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if($status=="root") 
+	{
+	}
+	else
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+	
+	$id = $_GET["product"];
+	$query = "DELETE FROM product WHERE id_product=$id";
+	mysqli_query($conn, $query);
+	
+	header("Refresh: 1; url=" . $_SERVER['HTTP_REFERER']);	
+	db_close();
+?>
+<head>
+</head>
+<body>
+	<?php
+	echo "Удаляем";
+	?>
+</body>

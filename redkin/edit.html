@@ -1,0 +1,168 @@
+<?php
+	session_start();
+	require_once "mysqli.php";
+	if( !isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if($status=="root" || $status=="admin") 
+	{
+	}
+	else
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+	db_close();
+	$key2=0;
+$id = $_GET["product"];	
+	db_connect();
+	if($key2==0)
+	{
+	$query1 = "SELECT * FROM product WHERE id_product='$id'";
+	$search = mysqli_query($conn, $query1);
+	while($row = mysqli_fetch_assoc($search))
+	{
+		$namepr= $row['namepr'];
+		$category= $row['category'];
+		$price= $row['price'];
+		$description=$row['description'];
+		$properties=$row['properties'];
+		$num=$row['status'];
+		$key2=1;
+	}
+	}
+if(!empty($_POST))
+{
+$namepr=$_POST['namepr'];
+$category=$_POST['category'];
+if($category=="Сады")
+		{
+		$category="gardens";
+		}
+		else if($category=="Электроника")
+		{
+		$category="electronics";
+		}
+		else if($category=="Водопровод")
+		{
+		$category="plumbing";
+		}
+		else if($category=="Инструменты")
+		{
+		$category="tools";
+		}
+$price=$_POST['price'];
+$description=$_POST['description'];
+$properties=$_POST['properties'];
+$num=$_POST['status'];
+	$key=0;
+	if($key==0)
+	{	
+		//---картинка
+		if ( is_uploaded_file($_FILES["img"]["tmp_name"])) {
+			$tmpPath = $_FILES["img"]["tmp_name"];
+			$toBuffer = file_get_contents($tmpPath);
+			$type = mime_content_type($tmpPath);
+			$img = "data:$type;base64," . base64_encode($toBuffer);
+		}
+		else
+		{
+			//стандартная картинка
+			$str="SELECT img FROM product WHERE id_product='$id'";
+			$qw=mysqli_query($conn, $str);
+			while($roww=mysqli_fetch_assoc($qw))
+			{
+				$img=$roww['img'];
+			}
+			//====
+		}
+		if($namepr!=null && $category!=null && $price!=null && $description!=null && $properties!=null && $num!=null)
+		{
+		$query = "UPDATE product SET namepr ='$namepr', category='$category', price='$price', description='$description', img='$img', properties='$properties', status='$num' WHERE id_product='$id'";
+		$result = mysqli_query($conn, $query);
+		header("Refresh: 1; url=category.html?category=$category");
+		echo "Товар обновлен!"."<br>";
+		}
+		else
+		{
+			echo "Заполните все поля!"."<br>";
+		}
+	}
+		else 
+	{
+		echo "Продукт с таким названием уже существует!"."<br>";
+	}
+}
+db_close();
+?>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>Редактирования товара</title>	
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+<form method="POST" enctype="multipart/form-data">
+	<input type="text" id="n2" name="namepr" value="<?=$namepr?>" placeholder="Название товара" maxlength=20>
+	<label for="n2"><span></span>Название</label><br>
+	<select id="n3" name="category" maxlength=10>
+	<?php 
+	if($category=="gardens")
+	{
+	echo "<option>Сады</option>";
+	echo "<option>Электроника</option>";
+	echo "<option>Водопровод</option>";
+	echo "<option>Инструменты</option>";
+	}
+	if($category=="electronics")
+	{
+	echo "<option>Электроника</option>";
+	echo "<option>Сады</option>";
+	echo "<option>Водопровод</option>";
+	echo "<option>Инструменты</option>";
+	}
+	if($category=="plumbing")
+	{
+	echo "<option>Водопровод</option>";
+	echo "<option>Сады</option>";
+	echo "<option>Электроника</option>";
+	echo "<option>Инструменты</option>";
+	}
+	if($category=="tools")
+	{
+	echo "<option>Инструменты</option>";
+	echo "<option>Сады</option>";
+	echo "<option>Электроника</option>";
+	echo "<option>Водопровод</option>";
+	}
+	?>
+	</select>
+	<label for="n3"><span></span>Категория</label><br>
+	<input type="number" id="n4" name="price" placeholder="Цена" value="<?=$price?>" maxlength=7>
+	<label for="n4"><span></span>Цена</label><br>
+	<input type="text" id="n5" name="description" placeholder="Описание" value="<?=$description?>" maxlength=100>
+	<label for="n5"><span></span>Описание</label><br>
+	<input type="file" id="n6" name="img" placeholder="Картинка" accept="image/jpeg,image/png,image/jpg">
+	<label for="n6"><span></span>Картинка</label><br>
+	<input type="text" id="n7" name="properties" placeholder="Свойства" value="<?=$properties?>" maxlength=100>
+	<label for="n7"><span></span>Свойства</label><br>
+	<input type="number" id="n8" name="status" placeholder="Количество" value="<?=$num?>" maxlength=10>
+	<label for="n8"><span></span>Количество</label><br>
+	<input type="submit" id="n4" placeholder="Добавить" value="Редактировать">
+</form>
+<?php
+		require_once "blocks/footer.php";
+	?>
+</body>

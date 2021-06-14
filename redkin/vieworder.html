@@ -1,0 +1,100 @@
+<?php
+	session_start();
+	if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	$id = $_GET["dm_deal"];	
+	$querydl = "SELECT * FROM dm_deal WHERE id_deal=$id";		
+	$resultdl = mysqli_query($conn, $querydl);	
+	while($rowdl = mysqli_fetch_assoc($resultdl))
+	{
+		$id_cus = $rowdl["id_cus"];
+		$name = $rowdl["product"];
+		$price = $rowdl["number"];
+		$index=split(',',$name);
+		$numb=split(',',$price);
+		$decsription = $rowdl["typetravel"];
+		$nums = $rowdl["totalprice"];
+		$id_usr = $rowdl["id_user"];
+			if($decsription=="fast")
+			{
+				$decsription="Доставка";
+			}
+			else
+			{
+				$decsription="Самовывоз";
+			}
+	}
+	db_close();
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="/trash.js"></script>
+</head>
+
+<body>
+	<?php 
+		require_once "blocks/header.php"; 
+	?>
+<?php
+					echo'<article id="$id">';
+						db_connect();
+						$usr="SELECT * FROM users WHERE id_user='$id_usr'";
+						$qusr=mysqli_query($conn, $usr);
+						while($rowusr = mysqli_fetch_assoc($qusr))
+						{
+							$id_usr=$rowusr['login'];
+						}
+						$cuss="SELECT * FROM customer WHERE id_cus='$id_cus'";
+						$qcus=mysqli_query($conn, $cuss);
+						while($rowcus = mysqli_fetch_assoc($qcus))
+						{
+							$id_cus=$rowcus['namecus'];
+						}
+						db_close();
+					echo'	<div class="vmm">Покупатель: '.$id_usr.'</div>';
+					echo'	<div class="vmm">Заказчик: '.$id_cus.'</div>';
+				for($i=0;$i<100;$i++)
+				{
+					$table1= $index[$i];
+					$table2= $numb[$i];
+					if($table1!=null){
+					db_connect();
+					$qwtrr="SELECT * FROM product WHERE id_product='$table1'";
+					$restrr=mysqli_query($conn,$qwtrr);
+					while($rowrtr = mysqli_fetch_assoc($restrr))
+					{
+						$table1=$rowrtr['namepr'];
+					}
+					db_close();
+					echo '<div class="vmm">'.$table1.'-'.$table2.'шт.</div>';
+					}
+				}
+echo'
+							<div class="vmm">Доставка: '.$decsription.'</div>
+							<div class="wrap">					
+							</div>
+							<div class="vmm">Стоимость: '.$nums.' р.</div>
+						</article>
+						</div>';
+						?>
+	<?php 
+		require_once "blocks/footer.php"; 
+	?>
+
+</body>
+
+</html>

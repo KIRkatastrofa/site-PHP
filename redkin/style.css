@@ -1,0 +1,99 @@
+.blocks {
+ width: 230px;
+ height:380px;
+ margin: 15px;
+ padding: 15px 15px;
+ background: white;
+ float: left;
+ box-shadow: 1px 1px 5px 2px rgba(0, 0, 0, 0.1)
+}
+.vmm {
+	font-family: Helvetica;
+	font-size: 1.0rem;
+	font-weight: 600;
+	padding: 0.1rem;
+	color:black;
+	
+}
+.price {
+	text-align: right;
+	font-weight: 600;
+	font-family: Helvetica;
+	padding: 0.7rem;
+	color:black;
+}
+.price:after {
+	content: "р."
+}
+.link{
+    display: inline-block;
+    position: relative;
+}
+.link span{
+    color: #202020;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 7px 15px;
+    display: block;
+    transition: all 0.5s ease 0s;
+}
+.link:hover span{ 
+color: blue; }
+.link:before,
+.link:after,
+.link span:before,
+.link span:after{
+    content: "";
+    border: 3px solid #4CAF50;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 100% 0 0 0;
+    opacity: 0;
+    position: absolute;
+    left: 0px;
+    top: -5px;
+    right: 50%;
+    bottom: 50%;
+    transform: translate3d(16px,8px,0) scale(0.5) rotate(90deg);
+    transition: all 0.3s ease 0s;
+}
+.link:after{
+    border-right: 3px solid #4CAF50;
+    border-left: none;
+    border-bottom: none;
+    border-radius: 0 10% 0 0;
+    right: 0px;
+    left: 50%;
+    transform: translate3d(16px,8px,0) scale(0.5) rotate(-90deg);
+}
+.link span:before{
+    border-top: none;
+    border-bottom: 3px solid #4CAF50;
+    border-radius: 0 0 0 10%;
+    bottom: -5px;
+    top: 50%;
+    transform: translate3d(16px,8px,0) scale(0.5) rotate(-90deg);
+}
+.link span:after{
+    border-top: none;
+    border-left: none;
+    border-right: 3px solid #4CAF50;
+    border-bottom: 3px solid #4CAF50;
+    border-radius: 0 0 100% 0;
+    right: 0px;
+    bottom: -5px;
+    left: 50%;
+    top: 50%;
+}
+.link:hover:before,
+.link:hover:after,
+.link:hover span:before,
+
+@media only screen and (max-width: 990px){
+    .link span{ font-size: 20px; }
+}
+@media only screen and (max-width: 767px){
+    .link{ margin-bottom: 20px; }
+}

@@ -1,0 +1,87 @@
+<?php
+	session_start();
+	if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if($status=="root") 
+	{
+	}
+	else
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+	db_close();
+?>
+<?php
+$statusi=$_POST['status'];
+$login=$_POST['logini'];
+$passw=$_POST['pi'];
+$rpassw=$_POST['rpi'];
+
+if(!empty($_POST))
+{
+	$key=0;
+	db_connect();
+	$query1 = "SELECT login FROM users";
+	$search = mysqli_query($conn, $query1);
+	while($row = mysqli_fetch_assoc($search))
+	{
+		//проверка на логин
+		if($row["login"]==$login)
+		{
+			$key=1;
+		}
+	}
+	if($passw==$rpassw and $key==0 and $passw!=null and $rpassw!=null and $login!=null)
+	{	
+		$salt = sha1(uniqid() . mt_rand());
+		$hashpas =sha1($salt . $passw);
+		$query = "INSERT INTO users (login, password, status, salt) VALUES ('$login','$hashpas','$statusi','$salt')";
+		$result = mysqli_query($conn, $query);
+		echo "Вы зарегистрировали пользователя!"."<br>";
+	}
+		else 
+	{
+		echo "Не правильный логин или пароль!"."<br>";
+	}
+	db_close();
+}
+?>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>Регистрация пользователя</title>	
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+<form method="POST">
+	<select id="n3" name="status" maxlength=10>
+<option>user</option>
+<option>admin</option>
+	</select><br>
+	<input type="email" id="n2" name="logini" placeholder="Моя@почта.ru" maxlength=20>
+	<label for="n2"><span></span>Логин</label><br>
+	<input type="password" id="n3" name="pi" placeholder="Мойпароль1234" maxlength=10>
+	<label for="n3"><span></span>Пароль</label><br>
+	<input type="password" id="n4" name="rpi" placeholder="Мойпароль1234" maxlength=10>
+	<label for="n4"><span></span>Повторите пароль</label><br>
+	<input type="submit" id="n4">
+</form>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+</body>

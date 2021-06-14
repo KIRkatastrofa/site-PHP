@@ -1,0 +1,163 @@
+<?php
+	session_start();
+	if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	$login=$_SESSION['user'];
+	db_connect();
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	$keye=0;
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if( !isset($_SESSION['LogIn']) ||  $status=="user") 
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+		$id_user=$_GET['trash'];
+		// Массив с товарами
+		$query = "SELECT * FROM trash WHERE id_user='$id_user'";		
+		$result = mysqli_query($conn, $query);
+		$fetchArray = array();	
+		while($row = mysqli_fetch_assoc($result))
+		array_push($fetchArray, $row);
+	//массив
+			$totalpriceS=0;
+			$id_product="";
+			$num_c="";
+		if(!empty($fetchArray)){
+		foreach ($result as $key => $val) {
+			$id = $val["id_trash"];
+			$name = $val["id_product"];
+			$counttr = $val["counttr"];
+			$quer = "SELECT * FROM product WHERE id_product='$name'";
+			$resu = mysqli_query($conn, $quer);
+			while($rowe = mysqli_fetch_assoc($resu))
+			{
+				$nums=$rowe['status'];
+				if($nums<$counttr)
+				{
+					$keye=1;
+				}
+			}
+			$totalprice = $val["totalprice"];
+			$totalpriceS=$totalpriceS+$totalprice;
+			$id_product=$id_product.",".$name;
+			$num_c=$num_c.",".$counttr; 
+				}
+				if($keye==0)
+				{
+					$keye=2;
+				}
+			}
+//====оформляем заказ
+if(!empty($_POST))
+{
+//===
+//удаляем количество и треш
+if($keye==2 && !empty($fetchArray))
+{
+		foreach ($result as $key => $val) {
+			$id = $val["id_trash"];
+			$name = $val["id_product"];
+			$counttr = $val["counttr"];
+			$quer1 = "SELECT * FROM product WHERE id_product='$name'";
+			$resu1= mysqli_query($conn, $quer1);
+			while($rowe1 = mysqli_fetch_assoc($resu1))
+			{
+				$nums=$rowe1['status'];
+				$nums=$nums-$counttr;
+
+			}
+			$quer2 = "UPDATE product SET status='$nums' WHERE id_product='$name'";
+			$resu2 = mysqli_query($conn, $quer2);
+		}
+}
+//
+//===
+$cust=$_POST['customer'];
+$product=$id_product;
+$number=$num_c;
+$dateofbuy= date("d.m.Y");
+$typetravel=$_POST['typen'];
+if($typetravel=="Самовывоз")
+{
+	$typetravel="slow";
+	$totalpriceS-=($totalpriceS*5*(1 / 100));
+}
+else
+{
+	$typetravel="fast";
+	$totalpriceS+=($totalpriceS*13*(1 / 100));
+}
+	db_connect();
+	$query1 = "SELECT id_cus FROM customer WHERE namecus='$cust'";
+	$result1 = mysqli_query($conn, $query1);
+	while($row1 = mysqli_fetch_assoc($result1))
+	{
+			$id_cus=$row1['id_cus'];
+	}
+	if($keye==2){
+	$query = "INSERT INTO dm_deal (id_cus,product, number, dateofbuy, typetravel, totalprice,id_user) VALUES ('$id_cus','$product','$number','$dateofbuy','$typetravel','$totalpriceS','$id_user')";
+	$result = mysqli_query($conn, $query);
+	//3) удаление trash
+	$queryD = "DELETE FROM trash WHERE id_user='$id_user'";
+	$resultD = mysqli_query($conn, $queryD);
+	header("Refresh: 2; url=trash.html");
+	echo "Вы оформили товар!"."<br>";
+	}
+	else
+	{	
+	header("Refresh: 2; url=trash.html");
+	echo "Не возможно оформить заказ!"."<br>";
+	}
+}
+	db_close();
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+</head>
+
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+<form method="POST">
+	<select id="n3" name="customer" maxlength=10>
+		<?php
+			db_connect();
+			$qww="SELECT namecus FROM customer GROUP BY namecus";
+			$ress=mysqli_query($conn, $qww);
+			while($tableName = mysqli_fetch_row($ress)) {
+ 
+    $table = $tableName[0];
+   echo <<<_TXT
+   <option>$table</option>;
+_TXT;
+	db_close();
+}
+			
+		?>
+	</select><br>
+	<select id="n4" name="typen" maxlength=10>
+		<option>Самовывоз</option><!--Самовывоз(0р.) slow-->
+		<option>Доставка</option><!--Доставка(130р.) fast-->
+	</select>
+	<label for="n4"><span></span>Получение товара</label><br>
+	<?=$totalpriceS?> р.<br>
+	<input type="submit" id="n4">
+</form>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+<?php
+	session_start();
+	if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	db_connect();
+	$login=$_SESSION['user'];
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if($status=="root" || $status=="admin") 
+	{
+	}
+	else
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+	db_close();
+?>
+<?php
+$cat=$_POST['category'];
+if($cat=="ФИЗ.лицо")
+{
+$cat="person";
+}
+else
+{
+$cat="organization";
+}
+$name=$_POST['logini'];
+$adres=$_POST['pi'];
+$phone=$_POST['rpi'];
+
+if(!empty($_POST))
+{
+	$key=0;
+	db_connect();
+	$query1 = "SELECT namecus FROM customer";
+	$search = mysqli_query($conn, $query1);
+	while($row = mysqli_fetch_assoc($search))
+	{
+		//проверка на логин
+		if($row["namecus"]==$name)
+		{
+			$key=1;
+		}
+	}
+	if($key==0)
+	{	
+		if($cat!=null && $name!=null && $adres!=null && $phone!=null)
+		{
+		$query = "INSERT INTO customer (typecus,namecus, adress, phone) VALUES ('$cat','$name','$adres','$phone')";
+		$result = mysqli_query($conn, $query);
+		header("Refresh: 1; url=addcus.html");
+		echo "Вы зарегистрировали заказчика!"."<br>";
+		}
+		else
+		{
+		echo "Заполните все поля!"."<br>";
+		}
+	}
+		else 
+	{
+		echo "Уже существует заказчик с таким именем!"."<br>";
+	}
+	db_close();
+}
+?>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>Регистрация заказчика</title>	
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+<form method="POST">
+			<select id="n3" name="category" maxlength=10>
+		<option>ФИЗ.лицо</option><!--ФИЗ.лицо person-->
+		<option>ЮР.лицо</option><!--ЮР.лицо organization-->
+	</select><br>
+	<input type="text" id="n2" name="logini" placeholder="Наименование" maxlength=40>
+	<label for="n2"><span></span>Наименование</label><br>
+	<input type="text" id="n3" name="pi" placeholder="Адресс" maxlength=50>
+	<label for="n3"><span></span>Адресс</label><br>
+	<input type="number" id="n4" name="rpi" placeholder="Телефон" maxlength=11>
+	<label for="n4"><span></span>Телефон</label><br>
+	<input type="submit" id="n4">
+</form>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+</body>

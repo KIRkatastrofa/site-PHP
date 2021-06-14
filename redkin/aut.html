@@ -1,0 +1,65 @@
+<?php
+	session_start();
+	if( isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+?>
+<?php
+$login=$_POST['logini'];
+$passw=$_POST['pi'];
+if(!empty($_POST))
+{
+	$key=0;
+	$n=0;
+	require_once "mysqli.php";
+	db_connect();
+	$logi = "SELECT * FROM users";
+	$search = mysqli_query($conn, $logi);
+	while($row = mysqli_fetch_assoc($search))
+	{
+		//проверка на логин и пароль
+		if($row["login"]==$login and $row["password"]==sha1($row["salt"] . $passw))
+		{
+			$key=1;
+		}
+	}
+	if($key==1 and $passw!=null and $login!=null)
+	{	
+		session_start();
+	
+		$_SESSION["LogIn"] = true;
+		$_SESSION["user"] = $login;
+		header("Refresh: 1; url=index.html");
+		echo "Добро пожаловать!"."<br>";
+	}
+	else 
+	{
+		echo "Не правильный логин или пароль!"."<br>";
+	}
+	db_close();
+}
+?>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>aut</title>	
+</head>
+<body>
+	<?php 
+		require_once "blocks/header.php";
+	?>
+	<div>
+<form method="POST">
+	<input type="text" id="n2" name="logini" placeholder="Моя@почта.ru" maxlength=20>
+	<label for="n2"><span></span>Логин</label><br>
+	<input type="password" id="n3" name="pi" placeholder="Мойпароль1234" maxlength=10>
+	<label for="n3"><span></span>Пароль</label><br>
+	<input type="submit" id="n4">
+</form>
+	</div>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+</body>

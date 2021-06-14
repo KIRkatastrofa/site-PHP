@@ -1,0 +1,147 @@
+<?php
+	session_start();
+		if(!isset($_SESSION['LogIn']) ) 
+	{
+		header("Location: aut.html");
+		exit(1);
+	}
+	require_once "mysqli.php";
+	$login=$_SESSION['user'];
+	db_connect();
+	$qw="SELECT status FROM users WHERE login='$login'";
+	$res=mysqli_query($conn,$qw);
+	while($rowr = mysqli_fetch_assoc($res))
+	{
+		$status=$rowr['status'];
+	}
+	if( !isset($_SESSION['LogIn']) ||  $status=="user") 
+	{
+		header("Location: index.html");
+		exit(1);
+	}
+		$qw3= "SELECT * FROM users WHERE login='$login'";
+		$sear3=mysqli_query($conn, $qw3);
+		while($row3 = mysqli_fetch_assoc($sear3))
+		{
+			$id_user=$row3['id_user'];
+		}
+		// Массив с товарами
+		$query = "SELECT * FROM trash WHERE id_user='$id_user'";		
+		$result = mysqli_query($conn, $query);
+		$fetchArray = array();	
+		while($row = mysqli_fetch_assoc($result))
+		array_push($fetchArray, $row);
+		//====оформление корзины		
+	db_close();
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script type="text/javascript" src="/trash.js"></script>
+</head>
+
+<body>
+
+	<?php 
+		require_once "blocks/header.php"; // шапка сайта
+	?>
+	
+		<h3>Ваша почта: <?=$_SESSION["user"]?></h3>
+		<?php
+		$totalpriceS=0;
+		$count_article = 0;
+			if(!empty($fetchArray)){
+			foreach ($result as $key => $val) {
+				$id = $val["id_trash"];
+				$name = $val["id_product"];
+				$counttr = $val["counttr"];
+				$totalprice = $val["totalprice"];
+				$totalpriceS=$totalpriceS+$totalprice;
+					if($counttr!=1)
+					{
+						$trashM= "<a href='trashM.php?product=$name'><button class='vm' type='button'><</button></a>";
+					}
+					else
+					{
+						$trashM="";
+					}
+				db_connect();
+				//наводим красоту
+				$qw2= "SELECT * FROM product WHERE id_product='$name'";
+				$sear2=mysqli_query($conn, $qw2);
+				if(mysqli_num_rows($sear2))
+				{
+				while($row2 = mysqli_fetch_assoc($sear2))
+				{
+					$statuscol=$row2['status'];
+					if($statuscol=="0")
+					{
+					$nameP=$row2['namepr'];
+					$img="";
+					$priceP="";
+					$query5 = "DELETE FROM trash WHERE id_product=$name";
+					mysqli_query($conn, $query5);
+					echo "Обновите страницу!";
+					}
+					else
+					{					
+					$nameP=$row2['namepr'];
+					$img=$row2['img'];
+					$priceP=$row2['price'];
+					}
+				}
+				}
+				else
+				{
+					$nameP=$row2['namepr'];
+					$img="";
+					$priceP="";
+					$query5 = "DELETE FROM trash WHERE id_product=$name";
+					mysqli_query($conn, $query5);
+					echo "Обновите страницу!";
+				}
+				db_close();
+				//
+				$count_article++;
+				
+						$article = <<<_OUT
+						<div class="blocks">
+						<a href="view.html?product=$name">
+						<article id="$id">
+							<div class="vmm">$nameP</div>
+							<div class="wrap">
+								<figure>
+									<img src="$img" width=200px height=200px>
+								</figure>
+							</div>
+							<div class="vmm">$counttr</a>
+							$trashM
+							<a href="trashP.php?product=$name"><button class="vm" type="button">></button></a>
+							</div><a href="view.html?product=$name">
+							<foot class="price">$totalprice</foot>
+							</a>
+							<a class="vm" type="button" href="delttrash.html?product=$id">удалить</a>
+						</article>
+						</div>
+_OUT;
+
+			
+				echo $article;						
+}
+echo $totalpriceS."р.<br>";
+echo "<a href='addtrash.html?trash=$id_user'><button>Оформить заказ</button></a>";
+echo '<a class="vm" type="button" href="delttrash.html?trash='.$id_user.'"><button>Удалить все</button></a>';
+}
+			else
+			{
+			echo "Корзина пуста!";
+			}
+			?>
+	<?php 
+		require_once "blocks/footer.php";
+	?>
+
+</body>
+
+</html>
